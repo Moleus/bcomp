@@ -25,7 +25,7 @@ public class RegisterProperties {
 		this.reg = reg;
 		this.x = x;
 		this.y = y;
-		this.hex = hex;
+		this.hex = hex && !reg.equals(Reg.PS);
 		this.constraints=constraints;
 		this.isLeft=isLeft;
 	}

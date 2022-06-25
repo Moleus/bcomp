@@ -15,11 +15,11 @@ import ru.ifmo.cs.bcomp.CPU;
 import ru.ifmo.cs.bcomp.IOCtrl;
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.PANE_SIZE;
 import ru.ifmo.cs.bcomp.ui.components.*;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 /**
- *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
  */
 public class GUI extends JApplet {
@@ -28,6 +28,7 @@ public class GUI extends JApplet {
 	private ActivateblePanel activePanel = null;
 	private final BasicComp bcomp;
 	private final CPU cpu;
+    private boolean isHex = true;
 
 
 	public GUI(BasicComp bcomp) {
@@ -40,13 +41,20 @@ public class GUI extends JApplet {
 	public void init() {
 		cmanager = new ComponentManager(this);
 
-		final ActivateblePanel[] panels = {
-			new BasicView(this),
-                        new AssemblerView(this),
-		};
+        final ActivateblePanel[] panels = {
+            new BasicView(this, this.isHex),
+            new AssemblerView(this),
+            new TraceView(this),
+        };
 
-		tabs = new JTabbedPane();
-		tabs.addKeyListener(cmanager.getKeyListener());
+        tabs = new JTabbedPane() {
+            protected void paintComponent(Graphics g) {
+                g.setColor(DisplayStyles.COLOR_BACKGROUND);
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
+                super.paintComponent(g);
+            }
+        };
+        tabs.addKeyListener(cmanager.getKeyListener());
 
 		tabs.addChangeListener(new ChangeListener() {
 			@Override
@@ -84,8 +92,8 @@ public class GUI extends JApplet {
 		cmanager.switchFocus();
 	}
 
-	public void gui() throws Exception {
-		JFrame frame = new JFrame("БЭВМ v1.45.07");
+    public void gui() throws Exception {
+        JFrame frame = new JFrame("БЭВМ v1.45.07-extended");
 
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.getContentPane().add(this);

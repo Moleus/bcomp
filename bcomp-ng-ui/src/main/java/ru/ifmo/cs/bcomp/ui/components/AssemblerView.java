@@ -4,22 +4,23 @@
 
 package ru.ifmo.cs.bcomp.ui.components;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Date;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import ru.ifmo.cs.bcomp.CPU;
 import ru.ifmo.cs.bcomp.ProgramBinary;
 import ru.ifmo.cs.bcomp.assembler.AsmNg;
 import ru.ifmo.cs.bcomp.assembler.Program;
 import ru.ifmo.cs.bcomp.ui.GUI;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.Date;
+
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 
 /**
@@ -30,7 +31,7 @@ public class AssemblerView extends BCompPanel implements ActionListener {
 	private final GUI gui;
 	private final CPU cpu;
 	private final ComponentManager cmanager;
-	private final JTextArea text;
+	private final RSyntaxTextArea text;
 	private final JTextArea errorarea;
 
 	public AssemblerView(final GUI gui) {
@@ -40,14 +41,29 @@ public class AssemblerView extends BCompPanel implements ActionListener {
 		this.cmanager = gui.getComponentManager();
                 
                 JPanel pane = new JPanel(new BorderLayout());
-                
-		text = new JTextArea();
-		text.setFont(FONT_COURIER_BOLD_21);
-		JScrollPane scroll = new JScrollPane(text);
+		pane.setBackground(COLOR_BACKGROUND);
+
+		text = new RSyntaxTextArea();
+		text.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ASSEMBLER_X86);
+		text.setCodeFoldingEnabled(true);
+		text.setBackground(COLOR_BACKGROUND);
+		text.setForeground(COLOR_TEXT);
+		RTextScrollPane  scroll = new RTextScrollPane(text);
 		pane.add(scroll,BorderLayout.CENTER);
+		Theme theme = null;
+		try {
+			theme = Theme.load(DisplayStyles.class.getClassLoader().getResourceAsStream("dark.xml"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		theme.apply(text);
 
 		JButton button = new JButton(cmanager.getRes().getString("compile"));
 		button.setForeground(COLOR_TEXT);
+		button.setBackground(COLOR_VALUE);
+		button.setOpaque(true);
+		button.setBorder(ButtonBorder.getBorder(COLOR_BUS));
+		button.addChangeListener(ButtonChangeListener.getChangeListener());
 		button.setFont(FONT_COURIER_PLAIN_12);
 		button.setFocusable(false);
 		button.addActionListener(this);
@@ -59,7 +75,10 @@ public class AssemblerView extends BCompPanel implements ActionListener {
                 errorarea = new JTextArea();
                 //errorarea.setRows(3);
                 errorarea.setEditable(false);
+		errorarea.setBackground(COLOR_BACKGROUND);
+		errorarea.setForeground(COLOR_TEXT);
                 JScrollPane errscroll = new JScrollPane(errorarea);
+		errscroll.setBackground(COLOR_BACKGROUND);
                 pane.add(errscroll,BorderLayout.SOUTH);
                 
                 JSplitPane splitpane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pane, errscroll);
@@ -113,6 +132,8 @@ public class AssemblerView extends BCompPanel implements ActionListener {
             errors = errors + err + '\n';
         }
         errors = errors + ft;
+		if(asm.getErrors().isEmpty()) errors = errors + "\n" + pobj.toCompiledWords();
+
         errorarea.setText(errors);
         if (pobj != null) {
             gui.getBasicComp().loadProgram(new ProgramBinary(pobj.getBinaryFormat()));

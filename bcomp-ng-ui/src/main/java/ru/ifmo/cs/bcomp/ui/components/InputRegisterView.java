@@ -23,6 +23,7 @@ public class InputRegisterView extends RegisterView {
 	private int regWidth;
 	private int bitno;
 	private int formattedWidth;
+    private int hexWidth;
 
 	public InputRegisterView(ComponentManager cmgr, Register reg) {
 		super(reg, COLOR_TITLE);
@@ -31,8 +32,10 @@ public class InputRegisterView extends RegisterView {
 		this.reg = reg;
 		activeBitView = cmanager.getActiveBit();
 
-		bitno = (regWidth =(int) reg.width) - 1;
-		formattedWidth = Utils.getBinaryWidth(regWidth);
+		bitno = 0;
+        hexWidth = 4;
+//        (regWidth =(int) reg.width) - 1;
+		formattedWidth = Utils.getBinaryWidth(hexWidth);
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -116,11 +119,11 @@ public class InputRegisterView extends RegisterView {
 	}
 
 	private void moveLeft() {
-		setActiveBit((bitno + 1) % regWidth);
+		setActiveBit((bitno + 1) % hexWidth);
 	}
 
 	private void moveRight() {
-		setActiveBit((bitno == 0 ? regWidth : bitno) - 1);
+		setActiveBit((bitno == 0 ? hexWidth : bitno) - 1);
 	}
 
 	private void invertBit() {
@@ -135,16 +138,15 @@ public class InputRegisterView extends RegisterView {
 
 	@Override
 	public void setValue() {
+        String hexValue = String.format("%04X", this.reg.getValue());
 		if (active) {
-			StringBuilder str = new StringBuilder(HTML +
-				Utils.toBinary((int)reg.getValue(), regWidth) + HTML_END);
-
+			StringBuilder str = new StringBuilder(HTML + hexValue + HTML_END);
 			int pos = 6 + formattedWidth - Utils.getBinaryWidth(bitno + 1);
 			str.insert(pos + 1, COLOR_END);
 			str.insert(pos, COLOR_ACTIVE_BIT);
 			setValue(str.toString());
 		} else
-			super.setValue(HTML + Utils.toBinary(reg.getValue(), regWidth) + HTML_END);
+			super.setValue(HTML + hexValue + HTML_END);
 	}
 
 	public void reqFocus() {

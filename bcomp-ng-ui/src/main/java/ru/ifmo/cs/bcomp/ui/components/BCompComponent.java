@@ -17,10 +17,11 @@ import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 public class BCompComponent extends BorderedComponent {
 	protected JLabel title;
 
-	 BCompComponent(String title, int ncells, Color color) {
-		super(3 + CELL_HEIGHT * (ncells + 1));
+    BCompComponent(String title, int ncells, Color color) {
+        super(3 + CELL_HEIGHT * (ncells + 1));
 
-		this.title = addLabel(title, FONT_COURIER_BOLD_18, color);
+        this.title = addLabel(title, FONT_COURIER_BOLD_18, color);
+        this.title.setForeground(COLOR_TEXT);
 	}
 
 	public BCompComponent(String title, Color colorTitleBG) {
@@ -77,7 +78,9 @@ public class BCompComponent extends BorderedComponent {
 
 	@Override
 	public void paintComponent(Graphics g) {
+        g.drawLine(1, 26, this.width - 2, 26);
+        g.setColor(DisplayStyles.COLOR_BACKGROUND);
+        g.fillRect(0, 0, this.width, this.height);
 		super.paintComponent(g);
-
 	}
 }

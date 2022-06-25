@@ -14,8 +14,7 @@ import ru.ifmo.cs.bcomp.SignalListener;
 
 import javax.swing.*;
 
-import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.COLOR_ACTIVE;
-import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.COLOR_BUS;
+import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 
 /**
  *
@@ -106,6 +105,9 @@ public abstract class BCompPanel extends ActivateblePanel {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		drawBuses(g);
+        // full screen background color
+        g.setColor(COLOR_BACKGROUND);
+        g.fillRect(0, 0, this.getWidth(), this.getHeight());
+        drawBuses(g);
 	}
 }

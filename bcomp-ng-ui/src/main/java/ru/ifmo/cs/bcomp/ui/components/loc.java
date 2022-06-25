@@ -9,7 +9,7 @@ public class loc extends ListResourceBundle {
     }
 
     private static final Object[][] contents = {
-
+    		{"title", "Basic computer"},
             {"read", " F6 Read"},
             {"write", "F5 Write"},
             {"setip", "F4 Enter Address"},
@@ -18,8 +18,10 @@ public class loc extends ListResourceBundle {
             {"tick", "Shift+F9 Tick"},
             {"run", "F9  Run"},
             {"stop", "F9 Stop  "},
+            {"load", "Load Program..."},
             {"basename", "Basic computer"},
             {"assembler", "Assembler"},
+            {"trace", "Trace"},
             {"output", "CDev-1 (0x2-0x3) Controller of output device"},
             {"input", "CDev-2 (0x4-0x5) Controller of input device"},
             {"IO", "CDev-3 (0x6-0x7) Controller of IO device"},
@@ -40,6 +42,13 @@ public class loc extends ListResourceBundle {
             {"numpad", "Numpad (0x1C-0x1F)"},
             {"error", "Error"},
             {"stopRunning", "To compile, stop the running program"},
-            {"compile", "Compile"}
+            {"compile", "Compile"},
+            {"setDelay", "Set delay (ms)"},
+            {"runTrace", "Run trace"},
+            {"pauseTrace", "Pause trace"},
+            {"setStartAddress", "Set the program start address"},
+            {"exportCSV", "Export as CSV"},
+            {"singleFile", "Single file"},
+            {"multipleFiles", "Multiple files"}
     };
 }

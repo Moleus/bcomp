@@ -19,6 +19,7 @@ public class CommutView extends JComponent {
         JLabel title = new JLabel("Commutator", JLabel.CENTER);
         title.setFont(FONT_COURIER_BOLD_21);
         title.setBounds(x, y, width, height);
+        title.setForeground(DisplayStyles.COLOR_TEXT);
         add(title);
 
         setBounds(x, y, width, height);

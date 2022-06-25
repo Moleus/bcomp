@@ -17,8 +17,8 @@ import java.util.EnumMap;
 
 
 import static ru.ifmo.cs.bcomp.ControlSignal.*;
-import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 import static ru.ifmo.cs.bcomp.ui.components.BusNames.*;
+import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
 /**
  *
  * @author Dmitry Afanasiev <KOT@MATPOCKuH.Ru>
@@ -161,11 +161,11 @@ public class BasicView extends BCompPanel {
 			}
 	};
 
-	public BasicView(GUI gui) {
+	public BasicView(GUI gui, boolean isHex) {
 
 		super(gui.getComponentManager(),
 				new RegisterProperties[]{
-						new RegisterProperties(Reg.AR, REG_ACCUM_X_BV, REG_ADDR_Y_BV, false, false,
+						new RegisterProperties(Reg.AR, REG_ACCUM_X_BV, REG_ADDR_Y_BV, isHex, false,
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
 									gridy = 5;
@@ -177,7 +177,7 @@ public class BasicView extends BCompPanel {
 									anchor = GridBagConstraints.NORTHWEST;
 									insets = new Insets(156, 0, 0, 0);
 								}}),
-						new RegisterProperties(Reg.DR, REG_ACCUM_X_BV, REG_DATA_Y_BV, false, false,
+						new RegisterProperties(Reg.DR, REG_ACCUM_X_BV, REG_DATA_Y_BV, isHex, false,
 
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
@@ -190,7 +190,7 @@ public class BasicView extends BCompPanel {
 								}}
 
 						),
-						new RegisterProperties(Reg.IP, REG_IP_X_BV, REG_IP_Y_BV, false, false,
+						new RegisterProperties(Reg.IP, REG_IP_X_BV, REG_IP_Y_BV, isHex, false,
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
 									gridy = 3;
@@ -201,7 +201,7 @@ public class BasicView extends BCompPanel {
 
 								}}
 						),
-						new RegisterProperties(Reg.CR, REG_INSTR_X_BV, REG_ADDR_Y_BV, false, false,
+						new RegisterProperties(Reg.CR, REG_INSTR_X_BV, REG_ADDR_Y_BV, isHex, false,
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
 									gridy = 2;
@@ -211,7 +211,7 @@ public class BasicView extends BCompPanel {
 									insets = new Insets(0, 40, 0, 0);
 								}}
 						),
-						new RegisterProperties(Reg.AC, REG_ACCUM_X_BV, REG_ACCUM_Y_BV, false, true,
+						new RegisterProperties(Reg.AC, REG_ACCUM_X_BV, REG_ACCUM_Y_BV, isHex, true,
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
 									gridy = 1;
@@ -220,7 +220,7 @@ public class BasicView extends BCompPanel {
 									weightx = 0.5;
 									insets = new Insets(60, 23, 0, 60);
 								}}),
-						new RegisterProperties(Reg.SP, REG_ACCUM_X_BV, 0, false, false,
+						new RegisterProperties(Reg.SP, REG_ACCUM_X_BV, 0, isHex, false,
 								new GridBagConstraints() {{
 									fill = GridBagConstraints.NONE;
 									gridy = 4;
@@ -228,19 +228,19 @@ public class BasicView extends BCompPanel {
 									weighty = 0.5;
 									insets = new Insets(0, 0, 80, 33);
 								}}),
-						new RegisterProperties(Reg.BR, 0, 0, false, true,
+						new RegisterProperties(Reg.BR, 0, 0, isHex, true,
 								new GridBagConstraints() {{
 									gridy = 2;
 									gridx = 3;
 									insets = new Insets(0, 3, 0, 40);
 								}}),
-						new RegisterProperties(Reg.PS, 0, 0, false, true,
+						new RegisterProperties(Reg.PS, 0, 0, isHex, true,
 								new GridBagConstraints() {{
 									gridy = 3;
 									gridx = 3;
 									insets = new Insets(0, 3, 0, 40 - REG_16_WIDTH + REG_9_WIDTH);
 								}}),
-						new RegisterProperties(Reg.IR, 0, 0, false, true,
+						new RegisterProperties(Reg.IR, 0, 0, isHex, true,
 								new GridBagConstraints() {{
 									gridy = 4;
 									gridx = 3;
@@ -372,6 +372,12 @@ public class BasicView extends BCompPanel {
 		for (int i = 1; i < 10; i++) {
 			ioButtons[i-1] = new JToggleButton(cmanager.getRes().getString("DEV-" + i));
 			ioButtons[i-1].setFont(FONT_COURIER_PLAIN_12);
+			ioButtons[i-1].setBackground(COLOR_VALUE);
+			ioButtons[i-1].setForeground(COLOR_TEXT);
+			ioButtons[i-1].setOpaque(true);
+			ioButtons[i-1].setBorder(ButtonBorder.getBorder(COLOR_BUS, 5, 17, 5, 17));
+			ioButtons[i-1].addChangeListener(ButtonChangeListener.getChangeListener());
+			ioButtons[i-1].setCursor(new Cursor(Cursor.HAND_CURSOR));
 			ioButtons[i-1].setFocusable(false);
 			ioButtons[i-1].addItemListener(actionListeners[i-1]);
 			buttonsPanel.add(ioButtons[i-1], constraintsButton);

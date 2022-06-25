@@ -48,8 +48,10 @@ public class RegisterView extends BCompComponent implements DataDestination {
 		this.formatWidth = regWidth;
 		this.valuemask = (1 << regWidth) - 1;
 		this.isLeft = isLeft;
-		setBounds(x, y, getValueWidth(regWidth, hex) + REG_TITLE_WIDTH - 10);
+		setBounds(x, y, getValueWidth(regWidth, false) + REG_TITLE_WIDTH - 10);
 		setValue();
+        title.setForeground(DisplayStyles.COLOR_TEXT);
+        value.setForeground(DisplayStyles.COLOR_TEXT);
 		if (!isLeft) {
 			title.setBounds(1, 1, REG_TITLE_WIDTH, CELL_HEIGHT + 1);
 			value.setBounds(REG_TITLE_WIDTH, 1, width - REG_TITLE_WIDTH - 1, CELL_HEIGHT + 1);

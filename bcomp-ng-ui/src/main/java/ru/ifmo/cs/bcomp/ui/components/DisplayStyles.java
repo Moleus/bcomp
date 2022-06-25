@@ -57,14 +57,14 @@ public class DisplayStyles {
     public static final Font FONT_COURIER_BOLD_45 = fontBold.deriveFont(45f);
 
     // Colors
-    public static final Color COLOR_TEXT = Color.BLACK;
+    public static final Color COLOR_TEXT = Color.WHITE;
     public static final Color COLOR_ACTIVE = Color.RED;
     public static final Color COLOR_BUS = Color.GRAY;
-    public static final Color COLOR_TITLE = new Color(157, 189, 165);
-    public static final Color COLOR_VALUE = new Color(219, 249, 235);
-    public static final Color COLOR_INPUT_TITLE = new Color(157 + 50, 189 + 50, 165 + 50);
+    public static final Color COLOR_TITLE = new Color(5, 71, 80);
+    public static final Color COLOR_VALUE = new Color(25, 89, 101);
+    public static final Color COLOR_INPUT_TITLE = new Color(207, 239, 215);
     public static final Color COLOR_ACTIVE_INPUT = new Color(192, 0, 0);
-    public static final Color COLOR_BACKGROUND = new Color(200, 221, 242);
+    public static final Color COLOR_BACKGROUND = new Color(30, 39, 46);
     public static final String COLOR_ACTIVE_BIT = "<font color=\"#FF0000\">";
     public static final String COLOR_END = "</font>";
     public static final String HTML = "<html>";

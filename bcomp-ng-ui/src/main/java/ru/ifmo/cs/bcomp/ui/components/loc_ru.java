@@ -19,6 +19,7 @@ public class loc_ru extends ListResourceBundle {
             {"stop", "F9 Останов"},
             {"basename", "Базовая ЭВМ"},
             {"assembler", "Ассемблер"},
+            {"trace", "Трассировка"},
             {"output", "КВУ-1 (0x2-0x3) Контроллер уст-ва вывода"},
             {"input", "КВУ-2 (0x4-0x5) Контроллер уст-ва ввода"},
             {"IO", "КВУ-3 (0x6-0x7) Контроллер уст-ва ввода-вывода"},
@@ -39,6 +40,13 @@ public class loc_ru extends ListResourceBundle {
             {"numpad", "Цифровая клавиатура (0x1C-0x1F)"},
             {"error", "Ошибка"},
             {"stopRunning", "Для компиляции остановите выполняющуюся программу"},
-            {"compile", "Компилировать"}
+            {"compile", "Компилировать"},
+            {"setDelay", "Задать задержку (мс)"},
+            {"runTrace", "Выполнить трассировку"},
+            {"pauseTrace", "Приостановить"},
+            {"setStartAddress", "Задать адрес началы программы"},
+            {"exportCSV", "Экспорт в CSV-файл"},
+            {"singleFile", "Один файл"},
+            {"multipleFiles", "Несколько файлов"}
     };
 }

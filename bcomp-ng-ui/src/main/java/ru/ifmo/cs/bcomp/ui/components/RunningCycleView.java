@@ -44,6 +44,7 @@ public class RunningCycleView extends BCompComponent {
 		for (int i = 0; i < cycleslabels.length; i++) {
 			labels[i] = addValueLabel(cycleslabels[i]);
 			labels[i].setBounds(1, getValueY(i), width - 2, CELL_HEIGHT);
+            labels[i].setForeground(DisplayStyles.COLOR_TEXT);
 		}
 		cycles.put(RunningCycle.INFETCH,0);
 		cycles.put(RunningCycle.ADFETCH,1);

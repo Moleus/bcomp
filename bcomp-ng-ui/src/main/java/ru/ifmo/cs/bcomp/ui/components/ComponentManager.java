@@ -4,24 +4,24 @@
 
 package ru.ifmo.cs.bcomp.ui.components;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import javax.swing.*;
-
 import ru.ifmo.cs.bcomp.*;
 import ru.ifmo.cs.bcomp.ui.GUI;
+import ru.ifmo.cs.bcomp.ui.translator.Translator;
+import ru.ifmo.cs.components.DataDestination;
+import ru.ifmo.cs.components.Memory;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import static ru.ifmo.cs.bcomp.ControlSignal.*;
-import static ru.ifmo.cs.bcomp.Reg.*;
+import static ru.ifmo.cs.bcomp.Reg.IR;
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
-
-
-import ru.ifmo.cs.components.DataDestination;
-import ru.ifmo.cs.components.Utils;
 
 /**
  *
@@ -40,6 +40,8 @@ public class ComponentManager {
 		}
 	}
 
+	private File prevDir = FileSystemView.getFileSystemView().getHomeDirectory();
+
 	private class ButtonProperties {
 		final String[] texts;
 		public final ActionListener listener;
@@ -56,6 +58,10 @@ public class ComponentManager {
 	private class ButtonsPanel extends JComponent {
 
 		public ButtonsPanel() {
+			JFrame jFrame = (JFrame) JFrame.getFrames()[0];
+			jFrame.setTitle(res.getString("title"));
+			jFrame.addComponentListener(BCompWindowListener.getWindowListener());
+
 			setBounds(0, BUTTONS_Y, PANE_WIDTH, BUTTONS_HEIGHT);
 			setLayout(new GridBagLayout());
 			GridBagConstraints constraints = new GridBagConstraints() {{
@@ -71,9 +77,17 @@ public class ComponentManager {
 			for (int i = 0; i < buttons.length - 2; i++) {
 				buttons[i] = new JButton(buttonProperties[i].texts[0]);
 				buttons[i].setForeground(buttonColors[0]);
+				buttons[i].setBackground(COLOR_VALUE);
 				buttons[i].setFont(FONT_COURIER_PLAIN_12);
 				buttons[i].setFocusable(false);
+
+				buttons[i].setOpaque(true);
+
+				buttons[i].setBorder(ButtonBorder.getBorder(COLOR_BUS));
+
 				buttons[i].addActionListener(buttonProperties[i].listener);
+				buttons[i].addChangeListener(ButtonChangeListener.getChangeListener());
+
 				buttons[i].setCursor(new Cursor(Cursor.HAND_CURSOR));
 				constraints.gridwidth = i == 0 ? 2 : 1;
 				if (i > 0) constraints.gridy = 1;
@@ -87,22 +101,27 @@ public class ComponentManager {
 			constraints.gridx = 3;
 			constraints.fill = GridBagConstraints.NONE;
 			constraints.anchor = GridBagConstraints.CENTER;
-			rbRanStop = new JRadioButton(buttonProperties[5].texts[0]);
+			rbRanStop = new JRadioButton(buttonProperties[6].texts[0]);
 			rbRanStop.setFont(FONT_COURIER_PLAIN_12);
-			rbRanStop.setBackground(new Color(200, 221, 242));
+			rbRanStop.setBackground(COLOR_BACKGROUND);
+			rbRanStop.setForeground(Color.WHITE);
+			rbRanStop.setOpaque(true);
 			rbRanStop.setBorderPainted(false);
-			rbRanStop.addActionListener(buttonProperties[5].listener);
+			rbRanStop.addActionListener(buttonProperties[6].listener);
 			rbRanStop.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			rbRanStop.setFocusPainted(false);
 			rbRanStop.setFocusable(false);
 			add(rbRanStop, constraints);
 			constraints.gridx++;
 
-			rbTact = new JRadioButton((buttonProperties[6].texts[0]));
+			rbTact = new JRadioButton((buttonProperties[7].texts[0]));
 			rbTact.setFont(FONT_COURIER_PLAIN_12);
-			rbTact.setBackground(new Color(200, 221, 242));
+			rbTact.setBackground(COLOR_BACKGROUND);
+			rbTact.setForeground(Color.WHITE);
+			rbTact.setOpaque(true);
+
 			rbTact.setBorderPainted(false);
-			rbTact.addActionListener(buttonProperties[6].listener);
+			rbTact.addActionListener(buttonProperties[7].listener);
 			rbTact.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			rbTact.setFocusPainted(false);
 			rbTact.setFocusable(false);
@@ -144,6 +163,13 @@ public class ComponentManager {
 					cmdContinue();
 				}
 			}),
+			new ButtonProperties( new String[] { res.getString("load") }, e -> {
+                try {
+                    cmdLoadProgramm();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }),
 			new ButtonProperties(new String[]{res.getString("stop"), res.getString("run")}, new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -201,6 +227,11 @@ public class ComponentManager {
 					cmdNextDelay();
 					break;
 
+				case KeyEvent.VK_X:
+					if (e.isControlDown())
+						reset();
+					break;
+
 				case KeyEvent.VK_Q:
 					if (e.isControlDown())
 						System.exit(0);
@@ -209,8 +240,8 @@ public class ComponentManager {
 		}
 	};
 
-	private static final int BUTTON_RUN = 5;
-	private static final int BUTTON_CLOCK = 6;
+	private static final int BUTTON_RUN = 6;
+	private static final int BUTTON_CLOCK = 7;
 	private JButton[] buttons;
 	private ButtonsPanel buttonsPanel = new ButtonsPanel();
 
@@ -245,7 +276,7 @@ public class ComponentManager {
 			@Override
 			protected void setValue(String val) {
 				super.setValue(val);
-				getRegisterView(IR).setValue(Utils.toBinary(cpu.getRegister(IR).getValue(),(int)input.getRegWidth()));
+				getRegisterView(IR).setValue(String.format("%04X", cpu.getRegister(IR).getValue()));
 			}
 		};
 		ioctrls = gui.getIOCtrls();
@@ -461,6 +492,116 @@ public class ComponentManager {
 
 	public void cmdPrevDelay() {
 		currentDelay = (currentDelay > 0 ? currentDelay : delayPeriods.length) - 1;
+	}
+
+	public void cmdLoadProgramm() throws IOException {
+		JFileChooser jfc = new JFileChooser(prevDir);
+		jfc.setAcceptAllFileFilterUsed(false);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("TXT file programm", "txt");
+		jfc.addChoosableFileFilter(filter);
+
+		JRadioButton jRadioButton = new JRadioButton(res.getString("singleFile"));
+		jRadioButton.setSelected(false);
+		jRadioButton.addItemListener(e ->
+		{
+			jfc.setMultiSelectionEnabled(jRadioButton.isSelected());
+			jRadioButton.setText(res.getString(jRadioButton.isSelected() ? "multipleFiles" : "singleFile"));
+		});
+
+		// jfc.add(jRadioButton);
+
+		int returnValue = jfc.showOpenDialog(null);
+
+		if (returnValue == JFileChooser.APPROVE_OPTION)
+		{
+			prevDir = jfc.getCurrentDirectory();
+
+			File[] selected = {jfc.getSelectedFile()};
+
+			if (jfc.isMultiSelectionEnabled())
+				selected = jfc.getSelectedFiles();
+
+			for (File f: selected)
+			{
+				Scanner file = new Scanner(f);
+
+				while (file.hasNext()) {
+					String line = file.nextLine().trim();
+
+					if (!line.isEmpty()) {
+						if (line.substring(line.length() - 1).equals("a")) {
+							String addr = line.replaceFirst(".$", "");
+
+							Integer value = Integer.parseInt(addr, 16);
+							cpu.getRegister(Reg.IR).setValue(value);
+							cpu.executeSetAddr();
+						} else {
+							String code = Translator.translate(line);
+							Integer value = Integer.parseInt(code, 16);
+							cpu.getRegister(Reg.IR).setValue(value);
+							cpu.executeWrite();
+						}
+					}
+				}
+
+				file.close();
+			}
+		}
+	}
+
+	public void reset()
+	{
+		Memory memory = cpu.getMemory();
+
+		cpu.executeSetAddr(0);
+		cpu.executeWrite(0);
+
+		for (long addr = 0x000; addr < 0x800; ++addr)
+			memory.setValue(addr, 0);
+
+		mem.updateMemory();
+
+		cpu.executeSetAddr(0);
+
+		for (Component comp: buttonsPanel.getComponents())
+		{
+			if (comp instanceof JToggleButton)
+				((JToggleButton) comp).setSelected(false);
+		}
+
+		Arrays.asList(Reg.values()).forEach(reg ->
+		{
+			String s = getRegisterView(reg).value.getText();
+			s = s.length() == 3 ? "000" : "0000";
+
+			getRegisterView(reg).setValue(s);
+			cpu.getRegister(reg).setValue(0);
+		});
+
+		activePanel.regPanel.repaint();
+
+		for (Component comp: input.getComponents())
+		{
+			if (comp instanceof JLabel)
+			{
+				JLabel jLabel = (JLabel) comp;
+
+				String s = jLabel.getText();
+
+				if (!s.equals("IR"))
+					input.setValue(0x0000);
+			}
+		}
+
+		Arrays.asList(flagViews).forEach(flagView ->
+		{
+			flagView.active = false;
+			flagView.repaint();
+		});
+
+		cpu.setRunState(false);
+		cpu.setClockState(true);
+		cpu.executeContinue();
 	}
 
 	public void saveDelay() {
