@@ -6,17 +6,14 @@ package ru.ifmo.cs.bcomp.ui.components;
 
 import ru.ifmo.cs.bcomp.*;
 import ru.ifmo.cs.bcomp.ui.GUI;
-import ru.ifmo.cs.bcomp.ui.translator.Translator;
+import ru.ifmo.cs.bcomp.ui.loader.InstructionsLoader;
+import ru.ifmo.cs.bcomp.ui.loader.InstructionsLoaderView;
 import ru.ifmo.cs.components.DataDestination;
 import ru.ifmo.cs.components.Memory;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static ru.ifmo.cs.bcomp.ControlSignal.*;
@@ -39,8 +36,6 @@ public class ComponentManager {
 			openBuses.add(signal);
 		}
 	}
-
-	private File prevDir = FileSystemView.getFileSystemView().getHomeDirectory();
 
 	private class ButtonProperties {
 		final String[] texts;
@@ -164,11 +159,7 @@ public class ComponentManager {
 				}
 			}),
 			new ButtonProperties( new String[] { res.getString("load") }, e -> {
-                try {
-                    cmdLoadProgramm();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                cmdLoadProgram();
             }),
 			new ButtonProperties(new String[]{res.getString("stop"), res.getString("run")}, new ActionListener() {
 
@@ -250,10 +241,11 @@ public class ComponentManager {
 	private final CPU cpu;
 	private final IOCtrl[] ioctrls;
 	private final MemoryView mem;
-	private FlagView[] flagViews = new FlagView[4];
+    private FlagView[] flagViews = new FlagView[4];
 	private EnumMap<Reg, RegisterView> regs = new EnumMap<Reg, RegisterView>(Reg.class);
 	private InputRegisterView input;
 	private ActiveBitView activeBit = new ActiveBitView(ACTIVE_BIT_X, REG_KEY_Y);
+    private InstructionsLoaderView instructionsLoaderView;
 	private volatile BCompPanel activePanel;
 	private final long[] delayPeriods = {0, 1, 5, 10, 25, 50, 100, 1000};
 	private volatile int currentDelay = 3;
@@ -272,6 +264,7 @@ public class ComponentManager {
 		this.gui = gui;
 		bcomp = gui.getBasicComp();
 		cpu = gui.getCPU();
+        instructionsLoaderView = new InstructionsLoaderView(new InstructionsLoader(bcomp));
 		input = new InputRegisterView(this, cpu.getRegister(IR)){
 			@Override
 			protected void setValue(String val) {
@@ -494,59 +487,8 @@ public class ComponentManager {
 		currentDelay = (currentDelay > 0 ? currentDelay : delayPeriods.length) - 1;
 	}
 
-	public void cmdLoadProgramm() throws IOException {
-		JFileChooser jfc = new JFileChooser(prevDir);
-		jfc.setAcceptAllFileFilterUsed(false);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("TXT file programm", "txt");
-		jfc.addChoosableFileFilter(filter);
-
-		JRadioButton jRadioButton = new JRadioButton(res.getString("singleFile"));
-		jRadioButton.setSelected(false);
-		jRadioButton.addItemListener(e ->
-		{
-			jfc.setMultiSelectionEnabled(jRadioButton.isSelected());
-			jRadioButton.setText(res.getString(jRadioButton.isSelected() ? "multipleFiles" : "singleFile"));
-		});
-
-		// jfc.add(jRadioButton);
-
-		int returnValue = jfc.showOpenDialog(null);
-
-		if (returnValue == JFileChooser.APPROVE_OPTION)
-		{
-			prevDir = jfc.getCurrentDirectory();
-
-			File[] selected = {jfc.getSelectedFile()};
-
-			if (jfc.isMultiSelectionEnabled())
-				selected = jfc.getSelectedFiles();
-
-			for (File f: selected)
-			{
-				Scanner file = new Scanner(f);
-
-				while (file.hasNext()) {
-					String line = file.nextLine().trim();
-
-					if (!line.isEmpty()) {
-						if (line.substring(line.length() - 1).equals("a")) {
-							String addr = line.replaceFirst(".$", "");
-
-							Integer value = Integer.parseInt(addr, 16);
-							cpu.getRegister(Reg.IR).setValue(value);
-							cpu.executeSetAddr();
-						} else {
-							String code = Translator.translate(line);
-							Integer value = Integer.parseInt(code, 16);
-							cpu.getRegister(Reg.IR).setValue(value);
-							cpu.executeWrite();
-						}
-					}
-				}
-
-				file.close();
-			}
-		}
+	public void cmdLoadProgram() {
+        instructionsLoaderView.load();
 	}
 
 	public void reset()
