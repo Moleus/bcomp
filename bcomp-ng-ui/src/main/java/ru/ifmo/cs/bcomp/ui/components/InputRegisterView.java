@@ -5,11 +5,11 @@
 package ru.ifmo.cs.bcomp.ui.components;
 
 import java.awt.event.*;
+import java.util.function.Predicate;
 
-import ru.ifmo.cs.bcomp.Reg;
+import ru.ifmo.cs.components.Register;
 import ru.ifmo.cs.components.Utils;
 import static ru.ifmo.cs.bcomp.ui.components.DisplayStyles.*;
-import ru.ifmo.cs.components.Register;
 
 /**
  *
@@ -20,10 +20,9 @@ public class InputRegisterView extends RegisterView {
 	private final Register reg;
 	private final ActiveBitView activeBitView;
 	private boolean active = false;
-	private int regWidth;
+	private final int regWidth;
 	private int bitno;
-	private int formattedWidth;
-    private int hexWidth;
+	private final int formattedWidth;
 
 	public InputRegisterView(ComponentManager cmgr, Register reg) {
 		super(reg, COLOR_TITLE);
@@ -32,18 +31,9 @@ public class InputRegisterView extends RegisterView {
 		this.reg = reg;
 		activeBitView = cmanager.getActiveBit();
 
-		bitno = 0;
-        hexWidth = 4;
-//        (regWidth =(int) reg.width) - 1;
-		formattedWidth = Utils.getBinaryWidth(hexWidth);
-
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (!value.isFocusOwner())
-					reqFocus();
-			}
-		});
+        regWidth = Utils.getHexWidth((int)reg.width);
+        bitno = regWidth - 1;
+		formattedWidth = regWidth;
 
 		value.setFocusable(true);
 		value.addFocusListener(new FocusListener() {
@@ -64,7 +54,23 @@ public class InputRegisterView extends RegisterView {
 		value.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				switch (e.getKeyCode()) {
+                Predicate<Integer> isNumber = (Integer keyCode) -> keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9;
+                Predicate<Integer> isNumPad = (Integer keyCode) -> keyCode >= KeyEvent.VK_NUMPAD0 && keyCode <= KeyEvent.VK_NUMPAD9;
+                Predicate<Integer> isHexLetter = (Integer keyCode) -> keyCode >= KeyEvent.VK_A && keyCode <= KeyEvent.VK_F;
+                int code = e.getKeyCode();
+
+                if (isNumber.test(code)) {
+                   setBit(code - 48);
+                   return;
+                } else if (isNumPad.test(code)) {
+                    setBit(code - 96);
+                    return;
+                } else if (isHexLetter.test(code)) {
+                    setBit(code - 55);
+                    return;
+                }
+
+                switch (e.getKeyCode()) {
 					case KeyEvent.VK_LEFT:
 					case KeyEvent.VK_BACK_SPACE:
 						moveLeft();
@@ -73,42 +79,9 @@ public class InputRegisterView extends RegisterView {
 					case KeyEvent.VK_RIGHT:
 						moveRight();
 						break;
-
-					case KeyEvent.VK_UP:
-						invertBit();
-						break;
-
-					case KeyEvent.VK_0:
-					case KeyEvent.VK_NUMPAD0:
-						setBit(0);
-						break;
-
-					case KeyEvent.VK_1:
-					case KeyEvent.VK_NUMPAD1:
-						setBit(1);
-						break;
-
 					default:
 						cmanager.keyPressed(e);
 				}
-			}
-		});
-
-		value.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (!value.isFocusOwner())
-					reqFocus();
-
-				int bitno = Utils.getBitNo(e.getX(), e.getX() > value.getWidth() / 2 ? formattedWidth - 1 : formattedWidth, FONT_COURIER_BOLD_21_WIDTH);
-
-				if (bitno < 0)
-					return;
-
-				setActiveBit(bitno);
-
-				if (e.getClickCount() > 1)
-					invertBit();
 			}
 		});
 	}
@@ -119,11 +92,11 @@ public class InputRegisterView extends RegisterView {
 	}
 
 	private void moveLeft() {
-		setActiveBit((bitno + 1) % hexWidth);
+		setActiveBit((bitno + 1) % regWidth);
 	}
 
 	private void moveRight() {
-		setActiveBit((bitno == 0 ? hexWidth : bitno) - 1);
+		setActiveBit((bitno == 0 ? regWidth : bitno) - 1);
 	}
 
 	private void invertBit() {
@@ -132,7 +105,7 @@ public class InputRegisterView extends RegisterView {
 	}
 
 	private void setBit(int value) {
-		reg.setValue(value,1,bitno);
+		reg.setValue(value,0xF,bitno * 4L);
 		moveRight();
 	}
 
